@@ -7,7 +7,7 @@
 - [H2-console](http://localhost:9898/)
 - Disattiva "Auto commit" (SET AUTOCOMMIT OFF)
 
-> Per default (jdbc:h2:mem:banking) il database non viene persistita!
+> Per default (jdbc:h2:mem:banking) la banca dati non viene persistita!
 
 ## Documentazione
 - [https://www.h2database.com/](https://www.h2database.com/)
