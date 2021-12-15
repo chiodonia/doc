@@ -3,9 +3,8 @@
 ## Installazione
 
 - Download [H2](https://www.h2database.com/)
-- java -jar bin/h2-1.4.200.jar
+- ```java -jar bin/h2-1.4.200.jar```
 - [H2-console](http://localhost:9898/)
-- Disattiva "Auto commit" (SET AUTOCOMMIT OFF)
 
 > Per default (jdbc:h2:mem:banking) la banca dati non viene persistita!
 
@@ -137,3 +136,70 @@ DROP TABLE SHOP.ORDINI;
 DROP TABLE SHOP.CLIENTI;
 DROP SCHEMA SHOP;
 ```
+
+### ALBERI
+Alcuni tipi di dati richiedono strutture dati ad [albero](https://en.wikipedia.org/wiki/Tree_(data_structure)). Pensiamo all'assemblaggio di un auto: l'auto è formata da "pezzi". Ogni "pezzo" è a sua volta formato da altri "pezzi".
+
+```
+┌────────────┐        ┌────────────┐        ┌────────────┐      
+│            │        │            │        │            │
+│            │        │            │        │            │
+│  PEZZI     ├────────┤  PEZZI_DI  │────────┤PEZZI_DI_DI │
+│            │1   0..N│            │1   0..N│            │
+│            │        │            │        │            │
+└────────────┘        └────────────┘        └────────────┘
+```
+
+Questa struttura "recursiva" può essere così modellata
+```
+         ┌─────────────────┐
+         │                 │
+    0..N │                 │
+┌────────┴────────┐        │
+│                 │        │
+│                 │        │
+│                 │        │
+│     PEZZI       ├────────┘
+│                 │
+│                 │
+│                 │
+└─────────────────┘
+```
+```
+SET AUTOCOMMIT OFF;
+CREATE SCHEMA IF NOT EXISTS ALBERI;
+SET SCHEMA ALBERI;
+```
+
+```
+CREATE TABLE PEZZI (
+    CODICE INT PRIMARY KEY, 
+    NOME VARCHAR(50) NOT NULL, 
+    PEZZO_DI INT REFERENCES PEZZI(CODICE) ON DELETE CASCADE
+);
+```
+```
+INSERT INTO PEZZI (CODICE, NOME, PEZZO_DI) VALUES (1, '1', NULL);
+INSERT INTO PEZZI (CODICE, NOME, PEZZO_DI) VALUES (11, '1.1', 1);
+INSERT INTO PEZZI (CODICE, NOME, PEZZO_DI) VALUES (12, '1.2', 1);
+INSERT INTO PEZZI (CODICE, NOME, PEZZO_DI) VALUES (111, '1.1.1', 11);
+INSERT INTO PEZZI (CODICE, NOME, PEZZO_DI) VALUES (2, '2', NULL);
+COMMIT;
+```
+
+```
+SELECT * FROM PEZZI P LEFT JOIN PEZZI DI on DI.PEZZO_DI = P.CODICE;
+```
+
+```
+DELETE FROM PEZZI WHERE CODICE = 1;
+SELECT * FROM PEZZI P LEFT JOIN PEZZI DI on DI.PEZZO_DI = P.CODICE;
+```
+
+```
+DROP TABLE ALBERI.PEZZI;
+DROP SCHEMA ALBERI;
+```
+
+
+
